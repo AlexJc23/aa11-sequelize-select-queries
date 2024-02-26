@@ -6,7 +6,7 @@ const app = express();
 require('dotenv').config();
 
 // Import the models used in these routes - DO NOT MODIFY
-const { Puppy } = require('./db/models');
+const { Puppy, sequelize, Sequelize } = require('./db/models');
 
 // Import Op to perform comparison operations in WHERE clauses - DO NOT MODIFY
 const { Op } = require("sequelize");
@@ -14,14 +14,17 @@ const { Op } = require("sequelize");
 // Express using json - DO NOT MODIFY
 app.use(express.json());
 
-
+// const Op = Sequelize.Op;
 // STEP 1
 // All puppies in the database
 // No WHERE clause
 app.get('/puppies', async (req, res, next) => {
     let allPuppies;
 
-    // Your code here 
+    // Your code here
+    allPuppies = await Puppy.findAll({
+        order: [['name', 'ASC']]
+    })
 
     res.json(allPuppies);
 });
@@ -33,7 +36,12 @@ app.get('/puppies', async (req, res, next) => {
 app.get('/puppies/chipped', async (req, res, next) => {
     let chippedPuppies;
 
-    // Your code here 
+    chippedPuppies = await Puppy.findAll({
+        where: {
+            microchipped: true
+        },
+        order: [['ageYrs', 'DESC'], ['name', 'ASC']]
+    })
 
     res.json(chippedPuppies);
 });
@@ -44,8 +52,14 @@ app.get('/puppies/chipped', async (req, res, next) => {
 // Finding one record by attribute
 app.get('/puppies/name/:name', async (req, res, next) => {
     let puppyByName;
-    
-    // Your code here 
+    let params = req.params.name;
+
+    puppyByName = await Puppy.findOne({
+        where: {
+            name: params
+        }
+    })
+
 
     res.json(puppyByName);
 })
@@ -56,8 +70,14 @@ app.get('/puppies/name/:name', async (req, res, next) => {
 // WHERE clause with a comparison
 app.get('/puppies/shepherds', async (req, res, next) => {
     let shepherds;
-    
-    // Your code here 
+
+    shepherds = await Puppy.findAll({
+        where: {
+            breed:{
+            [Op.like]: '%Shepherd'}
+        },
+        order: [['name', 'DESC']]
+    })
 
     res.json(shepherds);
 })
@@ -68,8 +88,14 @@ app.get('/puppies/shepherds', async (req, res, next) => {
 // WHERE clause with multiple attributes and comparisons
 app.get('/puppies/tinybabies', async (req, res, next) => {
     let tinyBabyPuppies;
-    
-    // Your code here 
+
+    tinyBabyPuppies = await Puppy.findAll({
+        where: {
+            ageYrs: {[Op.lt]: 1},
+            weightLbs: {[Op.lt]: 20}
+        },
+        order: [['ageYrs', 'ASC'], ['weightLbs', 'ASC']]
+    })
 
     res.json(tinyBabyPuppies);
 })
@@ -80,9 +106,14 @@ app.get('/puppies/tinybabies', async (req, res, next) => {
 // Finding one record by primary key
 app.get('/puppies/:id', async (req, res, next) => {
     let puppyById;
-    
-    // Your code here 
-    
+
+    const params = req.params.id;
+    puppyById = await Puppy.findOne({
+        where: {
+            id: params
+        }
+    })
+
     res.json(puppyById);
 });
 
